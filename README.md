@@ -1,6 +1,6 @@
-# Getting Started with Create React App
+# OPO TEST SOLVER
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Calculate test score adding number of questions, wrong and correct ones. Each 3 wrong questions discounts a correct one.
 
 ## Available Scripts
 
