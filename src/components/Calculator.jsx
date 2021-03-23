@@ -77,8 +77,7 @@ function fillInitialState(inputsArray, initialTestState) {
 }
 
 function calculateScore({ numberOfQuestions, wrong, correct }) {
-  const numberToSubstract = Math.floor(wrong / 3);
-  const finalCorrect = correct - numberToSubstract;
+  const finalCorrect = correct - wrong / 3;
   const finalTestScore = (finalCorrect / numberOfQuestions) * 10;
   return finalTestScore % 1 !== 0 ? finalTestScore.toFixed(1) : finalTestScore;
 }
