@@ -56,18 +56,19 @@ function FormSimple() {
             value={testState[input.name]}
             onChange={handleChange}
             labelText={input.labelText}
+            key={input.name}
           />
         ))}
 
         <button type="submit">Give it to me!</button>
-        {testCalcError && (
+        {!!testCalcError && (
           <p className="error" style={{ color: "red" }}>
-            testCalcError
+            {testCalcError}
           </p>
         )}
-        {lastTestResult && (
+        {!!lastTestResult && (
           <p style={{ color: lastTestResult >= 5 ? "green" : "red" }}>
-            lastTestResult
+            {lastTestResult}
           </p>
         )}
       </form>

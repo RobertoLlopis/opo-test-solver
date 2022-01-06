@@ -1,5 +1,5 @@
 import React from "react";
-function FormGroup({ name, value, onChange, labelText }) {
+function FormGroup({ name, value, onChange, labelText, min }) {
   return (
     <div className="form-group">
       <label htmlFor={name}>{labelText}</label>
@@ -10,6 +10,7 @@ function FormGroup({ name, value, onChange, labelText }) {
         name={name}
         value={value}
         onChange={onChange}
+        min={min}
       />
     </div>
   );
