@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { useLastResutsContext } from "../../contexts/LastTestsResultsContext";
 import FormField from "../FormField";
+import { useLastTestValuesContext } from "../../contexts/LastTestsValuesContext";
+import { useUpdateEffect } from "../../hooks/useUpdateEffect";
+import { calculateScore, fillInitialState, isEmpty, readLocalStorageJSON, returnValueFixed, writeLocalStorageJSON } from "../../utils";
 
 const clasicoInfo = {
   breakScoreDefaultPart1: 18,
@@ -54,28 +56,21 @@ function FormClasicoModerno({ calculatorSelected: kind }) {
     ...inputsArrayPart2,
   ]);
 
-  const { lastResultsCache, setLastResultsCache } = useLastResutsContext();
+  const { lastTestsValuesCache, setLastTestsValuesCache } =
+    useLastTestValuesContext();
 
-  const { [isClasico ? 'clasico' : 'moderno']: cached } = lastResultsCache;
+  const cachedTestState = lastTestsValuesCache[isClasico ? "clasico" : "moderno"];
+  const cachedLocalStorage = readLocalStorageJSON('lastTestsValuesCache')?.[isClasico ? "clasico" : "moderno"];
+  const cached = !isEmpty(cachedTestState) ? cachedTestState : !isEmpty(cachedLocalStorage) && cachedLocalStorage;
 
-  const [testState, setTestState] = useState(
-    cached.testState || initialTestState
-  );
-  const [lastTestResult, setLastTestResult] = useState(
-    cached.lastTestResult || initialResultErrorState
-  );
-  const [testCalcError, setTestCalcError] = useState(
-    cached.testCalcError || initialResultErrorState
-  );
-  const [transformedScores, setTransformedScores] = useState(
-    cached.transformedScores || {
-      ...initialResultErrorState,
-      overall: null,
-    }
-  );
-  const [transformedScoreError, setTransformedScoreError] = useState(
-    cached.transformedScoreError || null
-  );
+  const [testState, setTestState] = useState(cached || initialTestState);
+  const [lastTestResult, setLastTestResult] = useState(initialResultErrorState);
+  const [testCalcError, setTestCalcError] = useState(initialResultErrorState);
+  const [transformedScores, setTransformedScores] = useState({
+    ...initialResultErrorState,
+    overall: null,
+  });
+  const [transformedScoreError, setTransformedScoreError] = useState(null);
 
   const {
     correctPart1,
@@ -136,17 +131,17 @@ function FormClasicoModerno({ calculatorSelected: kind }) {
       return errorReturnObject;
     }
 
-    if(!!transformedScoreError) setTransformedScoreError(null);
+    if (!!transformedScoreError) setTransformedScoreError(null);
 
     const transformedScoreFirstPart = formulaComputed(
       rawScorePart1,
       breakScorePart1,
-      questionsPart1,
+      questionsPart1
     );
     const transformedScoreSecondPart = formulaComputed(
       rawScorePart2,
       breakScorePart2,
-      questionsPart2,
+      questionsPart2
     );
 
     return {
@@ -193,51 +188,50 @@ function FormClasicoModerno({ calculatorSelected: kind }) {
   };
 
   const updateCached = (part) => {
-    console.log(`part inside update cache`, part)
-    setLastResultsCache({
-      ...lastResultsCache,
-      [part]: {
-        testState,
-        lastTestResult,
-        testCalcError,
-        transformedScores,
-        transformedScoreError,
-      },
-    });
+    const newLastTestsValuesCache = {
+      ...lastTestsValuesCache,
+      [part]: { ...testState },
+    }
+    writeLocalStorageJSON('lastTestsValuesCache', newLastTestsValuesCache);
+    setLastTestsValuesCache(newLastTestsValuesCache);
   };
 
   const handleResetWithCache = () => {
-    if(!!cached.testState) setTestState(cached.testState);
-    if(!!cached.lastResultsCache)setLastTestResult(cached.lastTestResult);
-    if(!!cached.testCalcError)setTestCalcError(cached.testCalcError);
-    if(!!cached.transformedScores)setTransformedScores(cached.transformedScores);
-    if(!!cached.transformedScore)setTransformedScoreError(cached.transformedScoreError);
+    if (!!cached) setTestState(cached);
   };
 
-  useEffect(() => {
+  const resetParagraphsState = () => {
+    setLastTestResult(initialResultErrorState);
+    setTestCalcError(initialResultErrorState);
+    setTransformedScores({
+      ...initialResultErrorState,
+      overall: null,
+    });
+    setTransformedScoreError(null);
+  }
+
+  const handleKindChange = (isUnmount) => {
+    resetParagraphsState();
+    if (isUnmount) {
+      // If we select kind of FormSimple, we save cache in component unmount
+      updateCached(isClasico ? "clasico" : "moderno");
+      return;
+    }
     // If kind change between clasico and moderno, update cached and reset the states looking into the cache of comming kind
     // Beacause we arrive to this block when kind is already changed, we need to save cache of the opposite kind as selected.
-    updateCached(isClasico ? 'moderno' : 'clasico');
-    return () => {
-      // If we select kind of FormSimple, we save cache in component unmount
-      setLastResultsCache({
-        ...lastResultsCache,
-        ...{
-          [isClasico ? "clasico" : "moderno"]: {
-            testState,
-            lastTestResult,
-            testCalcError,
-            transformedScores,
-            transformedScoreError,
-          },
-        },
-      });
-    };
+    updateCached(isClasico ? "moderno" : "clasico");
+  }
+  
+  useUpdateEffect(() => {
+    console.log(`kind`, kind)
+    handleKindChange(false);
+    return () => handleKindChange(true);
   }, [kind]);
 
+  // Because when changing kinds component does not unmount, we wait to the cached recomputation to apply cache to testState.
   useEffect(() => {
     handleResetWithCache();
-  }, [lastResultsCache])
+  }, [lastTestsValuesCache]);
 
   useEffect(() => {
     const canCalculateTransformedScore =
@@ -255,10 +249,16 @@ function FormClasicoModerno({ calculatorSelected: kind }) {
   }, [lastTestResult]);
 
   const returnFieldMinValue = (fieldName) => {
-    if(!fieldName.includes('break')) return;
-    if(fieldName.includes('Part1'))return isClasico ? clasicoInfo.breakScoreDefaultPart1 : modernoInfo.breakScoreDefaultPart1;
-    if(fieldName.includes('Part2'))return isClasico ? clasicoInfo.breakScoreDefaultPart2 : modernoInfo.breakScoreDefaultPart2;
-  }
+    if (!fieldName.includes("break")) return;
+    if (fieldName.includes("Part1"))
+      return isClasico
+        ? clasicoInfo.breakScoreDefaultPart1
+        : modernoInfo.breakScoreDefaultPart1;
+    if (fieldName.includes("Part2"))
+      return isClasico
+        ? clasicoInfo.breakScoreDefaultPart2
+        : modernoInfo.breakScoreDefaultPart2;
+  };
 
   const renderFieldGroupAndGroupErrors = (inputsArray, part) => {
     return (
@@ -285,15 +285,16 @@ function FormClasicoModerno({ calculatorSelected: kind }) {
             {lastTestResult[part]}
           </p>
         )}
-         {!!transformedScores[part] && (
-        <p
-          style={{
-            color: transformedScores[part] >= 25 ? "green" : "red",
-          }}
-        >
-          Nota transformada de la {part === 1 ? 'primera' : 'segunda'} parte: {transformedScores[part]}
-        </p>
-      )}
+        {!!transformedScores[part] && (
+          <p
+            style={{
+              color: transformedScores[part] >= 25 ? "green" : "red",
+            }}
+          >
+            Nota transformada de la {part === 1 ? "primera" : "segunda"} parte:{" "}
+            {transformedScores[part]}
+          </p>
+        )}
       </div>
     );
   };
@@ -324,29 +325,12 @@ function FormClasicoModerno({ calculatorSelected: kind }) {
 
 export default FormClasicoModerno;
 
-function fillInitialState(inputsArray) {
-  return inputsArray.reduce((acc, inputInfo) => {
-    acc[inputInfo.name] = "";
-    return acc;
-  }, {});
-}
-
 function calculateRawScore(correct, wrong) {
   return correct - wrong / 3;
 }
 
-function calculateScore({ numberOfQuestions, wrong, correct }) {
-  const finalCorrect = correct - wrong / 3;
-  const finalTestScore = (finalCorrect / numberOfQuestions) * 10;
-  return returnValueFixed(finalTestScore);
-}
-
-function returnValueFixed(value) {
-  return value % 1 !== 0 ? value.toFixed(1) : value;
-}
-
 function formulaComputed(rawScore, breakScore, numberOfQuestions) {
-  const weigth = 25
+  const weigth = 25;
   return (
     weigth * ((rawScore - breakScore) / (numberOfQuestions - breakScore)) +
     weigth

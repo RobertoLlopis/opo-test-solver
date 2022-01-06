@@ -2,13 +2,13 @@ import { useState } from "react";
 import "./App.scss";
 import Calculator from "./components/Calculator";
 import Header from "./components/Header";
-import LastResutsContextProvider from "./contexts/LastTestsResultsContext";
+import LastTestValuesContextProvider from "./contexts/LastTestsValuesContext";
 
 function App() {
   const [calculatorSelected, setCalculatorSelected] = useState("simple");
 
   return (
-    <LastResutsContextProvider>
+    <LastTestValuesContextProvider>
       <Header
         calculatorSelected={calculatorSelected}
         setCalculatorSelected={setCalculatorSelected}
@@ -19,7 +19,7 @@ function App() {
           <Calculator calculatorSelected={calculatorSelected} />
         </div>
       </main>
-    </LastResutsContextProvider>
+    </LastTestValuesContextProvider>
   );
 }
 

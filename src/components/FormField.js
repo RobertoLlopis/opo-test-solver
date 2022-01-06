@@ -11,6 +11,7 @@ function FormGroup({ name, value, onChange, labelText, min }) {
         value={value}
         onChange={onChange}
         min={min}
+        step="0.01"
       />
     </div>
   );
