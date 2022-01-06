@@ -44,7 +44,10 @@ function FormClasico() {
   const [testState, setTestState] = useState(initialTestState);
   const [lastTestResult, setLastTestResult] = useState(initialResultErrorState);
   const [testCalcError, setTestCalcError] = useState(initialResultErrorState);
-  const [transformedScore, setTransformedScore] = useState(null);
+  const [transformedScores, setTransformedScores] = useState({
+    ...initialResultErrorState,
+    overall: null,
+  });
   const [tansformedScoreError, setTansformedScoreError] = useState(null);
   const {
     correctPart1,
@@ -114,7 +117,13 @@ function FormClasico() {
       "clasico"
     );
 
-    return transformedScoreFirstPart + transformedScoreSecondPart;
+    return {
+      1: transformedScoreFirstPart,
+      2: transformedScoreSecondPart,
+      overall: returnValueFixed(
+        transformedScoreFirstPart + transformedScoreSecondPart
+      ),
+    };
   };
 
   const handleChange = (e) => {
@@ -137,8 +146,12 @@ function FormClasico() {
   const handleSubmit = (e) => {
     e.preventDefault();
     setTestCalcError({
-        1: isNotValidAnswers({ part: 1 }) ? "Necesitas un número válido de preguntas y al menos el número de respuestas correctas en la parte 1 del exámen." : null,
-        2: isNotValidAnswers({ part: 2 }) ? "Necesitas un número válido de preguntas y al menos el número de respuestas correctas en la parte 2 del exámen." : null,
+      1: isNotValidAnswers({ part: 1 })
+        ? "Necesitas un número válido de preguntas y al menos el número de respuestas correctas en la parte 1 del exámen."
+        : null,
+      2: isNotValidAnswers({ part: 2 })
+        ? "Necesitas un número válido de preguntas y al menos el número de respuestas correctas en la parte 2 del exámen."
+        : null,
     });
     setLastTestResult({
       1: calculateNormalScore(1),
@@ -147,12 +160,16 @@ function FormClasico() {
   };
 
   useEffect(() => {
-    const canCalculateTransformedScore = !!lastTestResult[1] && !!lastTestResult[2];
+    const canCalculateTransformedScore =
+      !!lastTestResult[1] && !!lastTestResult[2];
 
     if (canCalculateTransformedScore) {
-      const transformedScore = calculateTransformedScores();
-      if (!!transformedScore) {
-        setTransformedScore(transformedScore);
+      const transformedScores = calculateTransformedScores();
+      const areValidScores = Object.values(transformedScores).every(
+        (score) => !!score
+      );
+      if (areValidScores) {
+        setTransformedScores(transformedScores);
       }
     }
   }, [lastTestResult]);
@@ -188,9 +205,31 @@ function FormClasico() {
           Nota segunda parte: {lastTestResult[2]}
         </p>
       )}
-      {transformedScore && (
-        <p style={{ color: transformedScore >= 5 ? "green" : "red" }}>
-          Nota transformada {transformedScore}
+      {transformedScores[1] && (
+        <p
+          style={{
+            color: transformedScores[1] >= 25 ? "green" : "red",
+          }}
+        >
+          Nota transformada de la primera parte: {transformedScores[1]}
+        </p>
+      )}
+      {transformedScores[2] && (
+        <p
+          style={{
+            color: transformedScores[2] >= 25 ? "green" : "red",
+          }}
+        >
+          Nota transformada de la segunda parte: {transformedScores[2]}
+        </p>
+      )}
+      {transformedScores.overall && (
+        <p
+          style={{
+            color: transformedScores.overall >= 25 ? "green" : "red",
+          }}
+        >
+          Nota transformada: {transformedScores.overall}
         </p>
       )}
       {tansformedScoreError && (
@@ -205,15 +244,10 @@ function FormClasico() {
 export default FormClasico;
 
 function fillInitialState(inputsArray) {
-  return inputsArray.reduce(
-    (acc, inputInfo) => {
-      acc[inputInfo.name] = "";
-      return acc;
-    },
-    {
-      score: "",
-    }
-  );
+  return inputsArray.reduce((acc, inputInfo) => {
+    acc[inputInfo.name] = "";
+    return acc;
+  }, {});
 }
 
 function calculateRawScore(correct, wrong) {
@@ -223,11 +257,16 @@ function calculateRawScore(correct, wrong) {
 function calculateScore({ numberOfQuestions, wrong, correct }) {
   const finalCorrect = correct - wrong / 3;
   const finalTestScore = (finalCorrect / numberOfQuestions) * 10;
-  return finalTestScore % 1 !== 0 ? finalTestScore.toFixed(1) : finalTestScore;
+  return returnValueFixed(finalTestScore);
+}
+
+function returnValueFixed(value) {
+  return value % 1 !== 0 ? value.toFixed(1) : value;
 }
 
 function formulaComputed(rawScore, breakScore, numberOfQuestions, kind) {
   const weigth = kind === "clasico" ? 25 : 50;
+
   return (
     weigth * ((rawScore - breakScore) / (numberOfQuestions - breakScore)) +
     weigth
