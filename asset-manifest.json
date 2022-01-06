@@ -1,22 +1,15 @@
 {
   "files": {
-    "main.css": "/opo-test-solver/static/css/main.ae00d3ed.chunk.css",
-    "main.js": "/opo-test-solver/static/js/main.5971cd56.chunk.js",
-    "main.js.map": "/opo-test-solver/static/js/main.5971cd56.chunk.js.map",
-    "runtime-main.js": "/opo-test-solver/static/js/runtime-main.67fa56cd.js",
-    "runtime-main.js.map": "/opo-test-solver/static/js/runtime-main.67fa56cd.js.map",
-    "static/js/2.f4e4da60.chunk.js": "/opo-test-solver/static/js/2.f4e4da60.chunk.js",
-    "static/js/2.f4e4da60.chunk.js.map": "/opo-test-solver/static/js/2.f4e4da60.chunk.js.map",
-    "static/js/3.1c860100.chunk.js": "/opo-test-solver/static/js/3.1c860100.chunk.js",
-    "static/js/3.1c860100.chunk.js.map": "/opo-test-solver/static/js/3.1c860100.chunk.js.map",
+    "main.css": "/opo-test-solver/static/css/main.c91d5a5d.css",
+    "main.js": "/opo-test-solver/static/js/main.13231556.js",
+    "static/js/787.4792cb8f.chunk.js": "/opo-test-solver/static/js/787.4792cb8f.chunk.js",
     "index.html": "/opo-test-solver/index.html",
-    "static/css/main.ae00d3ed.chunk.css.map": "/opo-test-solver/static/css/main.ae00d3ed.chunk.css.map",
-    "static/js/2.f4e4da60.chunk.js.LICENSE.txt": "/opo-test-solver/static/js/2.f4e4da60.chunk.js.LICENSE.txt"
+    "main.c91d5a5d.css.map": "/opo-test-solver/static/css/main.c91d5a5d.css.map",
+    "main.13231556.js.map": "/opo-test-solver/static/js/main.13231556.js.map",
+    "787.4792cb8f.chunk.js.map": "/opo-test-solver/static/js/787.4792cb8f.chunk.js.map"
   },
   "entrypoints": [
-    "static/js/runtime-main.67fa56cd.js",
-    "static/js/2.f4e4da60.chunk.js",
-    "static/css/main.ae00d3ed.chunk.css",
-    "static/js/main.5971cd56.chunk.js"
+    "static/css/main.c91d5a5d.css",
+    "static/js/main.13231556.js"
   ]
 }
