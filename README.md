@@ -1,6 +1,10 @@
 # OPO TEST SOLVER
 
-Calculate test score adding number of questions, wrong and correct ones. Each 3 wrong questions discounts a correct one.
+3 Forms to calculate official spanish goverment position exam´s score. Three available kind of calculation.
+
+1. For each 3 wrong answers discount one of correct ones.
+2. Applying rules and formula for C-1 "administrativo del estado" positions until 2019.
+3. Applying rules and formula for modern C-1 "administrativo del estado" positions. 
 
 ## Available Scripts
 
