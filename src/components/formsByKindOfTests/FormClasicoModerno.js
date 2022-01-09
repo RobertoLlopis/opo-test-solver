@@ -2,7 +2,15 @@ import React, { useEffect, useState } from "react";
 import FormField from "../FormField";
 import { useLastTestValuesContext } from "../../contexts/LastTestsValuesContext";
 import { useUpdateEffect } from "../../hooks/useUpdateEffect";
-import { calculateScore, fillInitialState, isEmpty, readLocalStorageJSON, returnValueFixed, writeLocalStorageJSON } from "../../utils";
+import useUpdateCache from "../../hooks/useUpdateCache";
+import {
+  calculateScore,
+  fillInitialState,
+  isEmpty,
+  readLocalStorageJSON,
+  returnValueFixed,
+  writeLocalStorageJSON,
+} from "../../utils";
 
 const clasicoInfo = {
   breakScoreDefaultPart1: 18,
@@ -56,13 +64,20 @@ function FormClasicoModerno({ calculatorSelected: kind }) {
     ...inputsArrayPart2,
   ]);
 
-  const { lastTestsValuesCache, setLastTestsValuesCache } =
+  const { lastTestsValuesCache, triggerUpdateCache } =
     useLastTestValuesContext();
 
-  const cachedTestState = lastTestsValuesCache[isClasico ? "clasico" : "moderno"];
-  const cachedLocalStorage = readLocalStorageJSON('lastTestsValuesCache')?.[isClasico ? "clasico" : "moderno"];
-  const cached = !isEmpty(cachedTestState) ? cachedTestState : !isEmpty(cachedLocalStorage) && cachedLocalStorage;
-
+  const cachedTestState =
+    lastTestsValuesCache[isClasico ? "clasico" : "moderno"];
+  const cachedLocalStorage = readLocalStorageJSON("lastTestsValuesCache")?.[
+    isClasico ? "clasico" : "moderno"
+  ];
+  const cached = !isEmpty(cachedTestState)
+    ? cachedTestState
+    : !isEmpty(cachedLocalStorage)
+    ? cachedLocalStorage
+    : false;
+  console.log(`cached, kind`, cached);
   const [testState, setTestState] = useState(cached || initialTestState);
   const [lastTestResult, setLastTestResult] = useState(initialResultErrorState);
   const [testCalcError, setTestCalcError] = useState(initialResultErrorState);
@@ -71,6 +86,7 @@ function FormClasicoModerno({ calculatorSelected: kind }) {
     overall: null,
   });
   const [transformedScoreError, setTransformedScoreError] = useState(null);
+  const { handleCacheUpdate } = useUpdateCache();
 
   const {
     correctPart1,
@@ -187,15 +203,6 @@ function FormClasicoModerno({ calculatorSelected: kind }) {
     });
   };
 
-  const updateCached = (part) => {
-    const newLastTestsValuesCache = {
-      ...lastTestsValuesCache,
-      [part]: { ...testState },
-    }
-    writeLocalStorageJSON('lastTestsValuesCache', newLastTestsValuesCache);
-    setLastTestsValuesCache(newLastTestsValuesCache);
-  };
-
   const handleResetWithCache = () => {
     if (!!cached) setTestState(cached);
   };
@@ -208,25 +215,18 @@ function FormClasicoModerno({ calculatorSelected: kind }) {
       overall: null,
     });
     setTransformedScoreError(null);
-  }
+  };
 
-  const handleKindChange = (isUnmount) => {
-    resetParagraphsState();
-    if (isUnmount) {
-      // If we select kind of FormSimple, we save cache in component unmount
-      updateCached(isClasico ? "clasico" : "moderno");
-      return;
+  useEffect(() => {
+    if (triggerUpdateCache) {
+      const newLastTestsValuesCache = {
+        ...lastTestsValuesCache,
+        [isClasico ? "clasico" : "moderno"]: { ...testState },
+      };
+      handleCacheUpdate(newLastTestsValuesCache);
     }
-    // If kind change between clasico and moderno, update cached and reset the states looking into the cache of comming kind
-    // Beacause we arrive to this block when kind is already changed, we need to save cache of the opposite kind as selected.
-    updateCached(isClasico ? "moderno" : "clasico");
-  }
-  
-  useUpdateEffect(() => {
-    console.log(`kind`, kind)
-    handleKindChange(false);
-    return () => handleKindChange(true);
-  }, [kind]);
+    resetParagraphsState();
+  }, [triggerUpdateCache]);
 
   // Because when changing kinds component does not unmount, we wait to the cached recomputation to apply cache to testState.
   useEffect(() => {

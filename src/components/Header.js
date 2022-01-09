@@ -1,9 +1,14 @@
-import React from "react";
+import { useCalculatorSelectedContext } from "../contexts/CalculatorSelectedContext";
+import { useLastTestValuesContext } from "../contexts/LastTestsValuesContext";
 
-function Header({ calculatorSelected, setCalculatorSelected }) {
+function Header() {
+  const { calculatorSelected } = useCalculatorSelectedContext();
+  const { setTriggerUpdateCache, setKindToGo } = useLastTestValuesContext();
+
   function handleHeaderButtonClick(e) {
     const { id } = e.target;
-    setCalculatorSelected(id);
+    setTriggerUpdateCache(true);
+    setKindToGo(id);
   }
 
   return (

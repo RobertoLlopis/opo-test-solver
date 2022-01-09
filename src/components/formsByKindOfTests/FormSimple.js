@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useLastTestValuesContext } from "../../contexts/LastTestsValuesContext";
-import { calculateScore, fillInitialState, isEmpty, readLocalStorageJSON, writeLocalStorageJSON } from "../../utils";
+import useUpdateCache from "../../hooks/useUpdateCache";
+import {
+  calculateScore,
+  fillInitialState,
+  isEmpty,
+  readLocalStorageJSON,
+} from "../../utils";
 import FormField from "../FormField";
 
 function FormSimple() {
@@ -20,21 +26,29 @@ function FormSimple() {
   ];
   const initialTestState = fillInitialState(inputsArray);
 
-  const { lastTestsValuesCache, setLastTestsValuesCache } =
+  const { lastTestsValuesCache, triggerUpdateCache } =
     useLastTestValuesContext();
 
-  const cachedTestState = typeof lastTestsValuesCache.simple === "object" ? lastTestsValuesCache.simple : {};
-  const cachedLocalStorage = typeof readLocalStorageJSON("simple")?.simple === "object" ? readLocalStorageJSON("simple").simple : {};
-  const cached = !isEmpty(cachedTestState) ? cachedTestState : !isEmpty(cachedLocalStorage) && cachedLocalStorage;
+  const cachedTestState =
+    typeof lastTestsValuesCache.simple === "object"
+      ? lastTestsValuesCache.simple
+      : {};
+  const cachedLocalStorage =
+    typeof readLocalStorageJSON("lastTestValuesCache")?.simple === "object"
+      ? readLocalStorageJSON("lastTestValuesCache").simple
+      : {};
+  const cached = !isEmpty(cachedTestState)
+    ? cachedTestState
+    : (!isEmpty(cachedLocalStorage) && cachedLocalStorage) || null;
 
-  const [testState, setTestState] = useState(
-    cached || initialTestState
-  );
+  const [testState, setTestState] = useState(cached || initialTestState);
   const [lastTestResult, setLastTestResult] = useState(null);
   const [testCalcError, setTestCalcError] = useState(null);
+  const { handleCacheUpdate } = useUpdateCache();
   const { correct, number, wrong } = testState;
 
-  const handleChange = (e) =>  setTestState({ ...testState, [e.target.name]: e.target.value });
+  const handleChange = (e) =>
+    setTestState({ ...testState, [e.target.name]: e.target.value });
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -59,16 +73,15 @@ function FormSimple() {
   };
 
   useEffect(() => {
-    return () =>{
-        console.log(`testState`, testState)
-        const newLastTestsValuesCache = {
-            ...lastTestsValuesCache,
-            simple: {...testState},
-        }
-        console.log(`out`, newLastTestsValuesCache)
-        writeLocalStorageJSON('lastTestsValuesCache',newLastTestsValuesCache);
-      setLastTestsValuesCache(newLastTestsValuesCache)};
-  }, [testState]);
+    if (triggerUpdateCache) {
+      console.log(`testState`, testState);
+      const newLastTestsValuesCache = {
+        ...lastTestsValuesCache,
+        simple: { ...testState },
+      };
+      handleCacheUpdate(newLastTestsValuesCache);
+    }
+  }, [triggerUpdateCache]);
 
   return (
     <form id="Calculator" onSubmit={handleSubmit}>
