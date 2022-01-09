@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/opo-test-solver/static/css/main.c91d5a5d.css",
-    "main.js": "/opo-test-solver/static/js/main.13231556.js",
+    "main.css": "/opo-test-solver/static/css/main.e2cae8a0.css",
+    "main.js": "/opo-test-solver/static/js/main.430c277b.js",
     "static/js/787.4792cb8f.chunk.js": "/opo-test-solver/static/js/787.4792cb8f.chunk.js",
     "index.html": "/opo-test-solver/index.html",
-    "main.c91d5a5d.css.map": "/opo-test-solver/static/css/main.c91d5a5d.css.map",
-    "main.13231556.js.map": "/opo-test-solver/static/js/main.13231556.js.map",
+    "main.e2cae8a0.css.map": "/opo-test-solver/static/css/main.e2cae8a0.css.map",
+    "main.430c277b.js.map": "/opo-test-solver/static/js/main.430c277b.js.map",
     "787.4792cb8f.chunk.js.map": "/opo-test-solver/static/js/787.4792cb8f.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.c91d5a5d.css",
-    "static/js/main.13231556.js"
+    "static/css/main.e2cae8a0.css",
+    "static/js/main.430c277b.js"
   ]
 }
